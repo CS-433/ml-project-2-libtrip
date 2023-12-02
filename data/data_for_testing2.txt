@@ -1,0 +1,22 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2709
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red42\green49\blue64;}
+{\*\expandedcolortbl;;\cssrgb\c21569\c25490\c31765;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\sa400\partightenfactor0
+
+\f0\fs32 \cf2 \expnd0\expndtw0\kerning0
+Sprecher 1: Guten Tag zusammen! Ich freue mich, dass wir uns hier treffen, um \'fcber die Ideenfindung f\'fcr unser neues Startup zu sprechen. Wie k\'f6nnen wir am besten starten?\
+Sprecher 2: Hallo! Ich denke, wir sollten uns zun\'e4chst auf Branchen oder Problembereiche konzentrieren, in denen wir Potenzial sehen. Vielleicht k\'f6nnten wir in Zukunftstechnologien oder Nachhaltigkeitsl\'f6sungen investieren?\
+Sprecher 3: Genau, das sind gute Ans\'e4tze. Aber sollten wir nicht auch eine Zielgruppe oder ein konkretes Problem identifizieren, dem wir uns widmen m\'f6chten? Vielleicht k\'f6nnten wir uns auf Bildung oder soziale Innovationen fokussieren?\
+Sprecher 4: Ja, das sind interessante \'dcberlegungen. Doch wir sollten auch die finanzielle Seite im Blick behalten. Haben wir bereits Gedanken dar\'fcber gemacht, wie unser Gesch\'e4ftsmodell aussehen k\'f6nnte?\
+Sprecher 5: Ich stimme zu, dass die Rentabilit\'e4t unserer Idee wichtig ist. Vielleicht k\'f6nnten wir eine Nische finden oder ein innovatives Produkt entwickeln, das eine Marktl\'fccke schlie\'dft.\
+Sprecher 6: Richtig! Wir sollten uns darauf konzentrieren, etwas Einzigartiges zu schaffen. Idealerweise etwas, das es so noch nicht gibt und das einen echten Mehrwert bietet.\
+Sprecher 1: Diese Ans\'e4tze sind sehr vielf\'e4ltig und spannend! Vielleicht k\'f6nnten wir verschiedene Ideen kombinieren, um eine innovative und bedeutsame L\'f6sung zu entwickeln. Hat jemand noch weitere Gedanken dazu?\
+Sprecher 2: Vielleicht k\'f6nnten wir eine Ideenwerkstatt organisieren, in der wir kreativ brainstormen und unsere Ideen zusammentragen. Dadurch k\'f6nnten wir verschiedene Ans\'e4tze miteinander verkn\'fcpfen.\
+Sprecher 3: Eine gro\'dfartige Idee! Solch ein Workshop k\'f6nnte uns helfen, unsere Gedanken zu strukturieren und einen klaren Fahrplan f\'fcr die Umsetzung zu erstellen.\
+Sprecher 4: Ich schlage vor, dass wir uns regelm\'e4\'dfig treffen, um unsere Fortschritte zu \'fcberpr\'fcfen und unsere Ideen weiterzuentwickeln. Ein strukturierter Zeitplan w\'e4re hilfreich.\
+Sprecher 5: Absolut! Die regelm\'e4\'dfige Zusammenarbeit und der konstante Austausch sind von gro\'dfer Bedeutung f\'fcr die erfolgreiche Entwicklung unseres Startups.\
+Sprecher 6: Vielen Dank f\'fcr eure wertvollen Beitr\'e4ge! Lasst uns unsere Ideen zusammentragen und beim n\'e4chsten Treffen weiter vertiefen.\
+}
