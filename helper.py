@@ -3,6 +3,7 @@ import numpy as np
 import os
 import matplotlib.image as mpimg
 import numpy as np
+from PIL import Image
 
 def load_images_from_folder(folder):
     """
@@ -91,3 +92,22 @@ def value_to_class(v, foreground_threshold):
         return 1
     else:
         return 0
+    
+def load_img_for_vit(directory):
+    """
+    Load images from a specified directory.
+
+    Args:
+        directory (str): The path to the directory containing images.
+
+    Returns:
+        list: A list of loaded images.
+    """
+
+    # Get a list of image file paths
+    image_paths = [os.path.join(directory, filename) for filename in os.listdir(directory) if filename.endswith(('.png', '.jpg', '.jpeg'))]
+
+    # Load images
+    images = [Image.open(image_path) for image_path in image_paths]
+    
+    return images
