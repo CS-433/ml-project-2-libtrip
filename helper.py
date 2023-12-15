@@ -112,6 +112,7 @@ def load_img_for_vit(directory):
     images = [Image.open(image_path) for image_path in image_paths]
     
     return images
+
 def patch_to_label(patch):
     df = np.mean(patch)
     if df > 0.25:
