@@ -91,6 +91,7 @@ def value_to_class(v, foreground_threshold):
     Returns:
     - int: Binary class (0 or 1).
     """
+    foreground_threshold = 0.25
     df = np.sum(v)
     if df > foreground_threshold:
         return 1
