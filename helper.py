@@ -7,90 +7,6 @@ from sklearn.cluster import DBSCAN
 from collections import Counter
 import torch
 
-
-
-def img_crop(im, w, h):
-    """
-    Crop an input image into smaller patches.
-
-    Parameters:
-    - im (numpy.ndarray): Input image represented as a NumPy array.
-    - w (int): Width of the patches.
-    - h (int): Height of the patches.
-
-    Returns:
-    - list: A list of cropped patches, where each element is a NumPy array representing a patch.
-
-    Example:
-    >>> input_image = np.random.rand(256, 256, 3)
-    >>> width, height = 64, 64
-    >>> cropped_patches = img_crop(input_image, width, height)
-    """
- 
-    list_patches = []
-    imgwidth = im.shape[0]
-    imgheight = im.shape[1]
-    is_2d = len(im.shape) < 3
-    for i in range(0, imgheight, h):
-        for j in range(0, imgwidth, w):
-            if is_2d:
-                im_patch = im[j : j + w, i : i + h]
-            else:
-                im_patch = im[j : j + w, i : i + h, :]
-            list_patches.append(im_patch)
-    return list_patches
-
-def img_float_to_uint8(img):
-    """
-    Convert a floating-point image to 8-bit unsigned integer format.
-
-    Parameters:
-    - img (numpy.ndarray): Input image represented as a NumPy array.
-
-    Returns:
-    - numpy.ndarray: Output image with pixel values scaled to the range [0, 255] and converted to uint8.
-
-    """
-    rimg = img - np.min(img)
-    rimg = (rimg / np.max(rimg) * 255).round().astype(np.uint8)
-    return rimg
-
-def value_to_class(v, foreground_threshold):
-    """
-    Convert a value to a binary class based on a foreground threshold.
-
-    Parameters:
-    - v (numpy.ndarray): Input value or array.
-    - foreground_threshold (float): Threshold for determining the binary class.
-
-    Returns:
-    - int: Binary class (0 or 1).
-    """
-    df = np.sum(v)
-    if df > foreground_threshold:
-        return 1
-    else:
-        return 0
-    
-def load_img_for_vit(directory):
-    """
-    Load images from a specified directory.
-
-    Args:
-        directory (str): The path to the directory containing images.
-
-    Returns:
-        list: A list of loaded images.
-    """
-
-    # Get a list of image file paths
-    image_paths = [os.path.join(directory, filename) for filename in os.listdir(directory) if filename.endswith(('.png', '.jpg', '.jpeg'))]
-
-    # Load images
-    images = [Image.open(image_path) for image_path in image_paths]
-    
-    return images
-
 def patch_to_label(patch):
     df = np.mean(patch)
     if df > 0.25:
@@ -116,7 +32,7 @@ def masks_to_submission(submission_filename, *image_filenames):
         for fn in image_filenames[0:]:
             f.writelines('{}\n'.format(s) for s in mask_to_submission_strings(fn))
 
-def clean_image(image, eps=10, min_points_per_cluster=500):
+def clean_image(image, eps=6, min_points_per_cluster=2000):
     """
     Remove small clusters from an image using DBSCAN.
 
@@ -157,6 +73,27 @@ def clean_image(image, eps=10, min_points_per_cluster=500):
     clean_data = np.zeros_like(data)
     clean_data[x_cor[mask], y_cor[mask]] = 255
     return clean_data
+
+def process_images(input_folder, output_folder):
+    # Ensure the output folder exists
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    # Get a list of image files in the input folder
+    image_files = [f for f in os.listdir(input_folder) if f.endswith(('.png', '.jpg', '.jpeg'))]
+
+    # Process each image
+    for image_file in image_files:
+        # Load the image
+        input_path = os.path.join(input_folder, image_file)
+        image = Image.open(input_path)
+
+        # Clean the image
+        cleaned_image = clean_image(image)
+
+        # Save the cleaned image to the output folder
+        output_path = os.path.join(output_folder, image_file)
+        Image.fromarray(cleaned_image).save(output_path)
 
 def create_filename(length_loader, index):
     """
