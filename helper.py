@@ -6,6 +6,36 @@ import re
 from sklearn.cluster import DBSCAN
 from collections import Counter
 import torch
+from torch.utils.data import Dataset, random_split
+from sklearn.metrics import accuracy_score, f1_score
+
+def split_data(dataset,test_ratio,seed):
+    
+    """Splits a dataset into random train and test subsets.
+
+    Args:
+        dataset (Dataset): dataset.
+        test_ratio (float): test proportion (between 0 and 1).
+        seed (int, optional): seed. Defaults to None.
+
+    Returns:
+        Tuple[Dataset, Dataset]: train and test datasets.
+    """
+    # Define generator
+    generator = torch.Generator()
+    if seed is not None:
+        generator.manual_seed(seed)
+
+    # Define lengths of subsets
+    train_ratio = 1 - test_ratio
+    train_size = int(train_ratio * len(dataset))
+    test_size = len(dataset) - train_size
+    lengths = [train_size, test_size]
+
+    # Split
+    train_dataset, test_dataset = random_split(dataset, lengths, generator)
+
+    return train_dataset, test_dataset
 
 def patch_to_label(patch):
     df = np.mean(patch)
@@ -32,7 +62,29 @@ def masks_to_submission(submission_filename, *image_filenames):
         for fn in image_filenames[0:]:
             f.writelines('{}\n'.format(s) for s in mask_to_submission_strings(fn))
 
-def clean_image(image, eps=6, min_points_per_cluster=2000):
+def clean_(data,blackOrWhite,eps=10,min_samples=500):
+    dbscan = DBSCAN(eps=eps)
+    if blackOrWhite:
+        x_cor, y_cor = np.where(data == 0)
+    else:
+        x_cor, y_cor = np.where(data >0)
+    X = np.array([[x, y] for x, y in zip(x_cor, y_cor)])
+    labels= dbscan.fit_predict(X)
+    points_per_cluster = Counter(labels)
+    clusters_to_drop = [cluster for cluster in points_per_cluster if points_per_cluster[cluster] < min_samples]
+    mask = np.isin(labels, clusters_to_drop, invert=True)
+    
+    if blackOrWhite:
+        clean_data = np.full_like(data, 255)
+        clean_data[x_cor[mask], y_cor[mask]] = 0
+    else:
+        clean_data = np.full_like(data, 0)
+        clean_data[x_cor[mask], y_cor[mask]] = 255
+    
+    return clean_data
+    
+
+def clean_image(image, eps=10, min_points_per_cluster=500):
     """
     Remove small clusters from an image using DBSCAN.
 
@@ -46,33 +98,9 @@ def clean_image(image, eps=6, min_points_per_cluster=2000):
     Returns:
     - numpy.ndarray: Cleaned binary image with small clusters removed.
     """
-
-    # Convert the image to a NumPy array
-    data = np.array(image)
-
-    # Find the coordinates of non-zero pixels
-    x_cor, y_cor = np.where(data > 0)
-
-    # Create a feature matrix from the coordinates
-    X = np.array([[x, y] for x, y in zip(x_cor, y_cor)])
-
-    # Apply DBSCAN clustering
-    dbscan = DBSCAN(eps=eps)
-    labels = dbscan.fit_predict(X)
-
-    # Count the number of points in each cluster
-    points_per_cluster = Counter(labels)
-
-    # Identify clusters with fewer points than the threshold
-    clusters_to_drop = [cluster for cluster in points_per_cluster if points_per_cluster[cluster] < min_points_per_cluster]
-
-    # Create a mask to exclude points in small clusters
-    mask = np.isin(labels, clusters_to_drop, invert=True)
-
-    # Create a cleaned image by applying the mask
-    clean_data = np.zeros_like(data)
-    clean_data[x_cor[mask], y_cor[mask]] = 255
-    return clean_data
+    data= np.array(image)
+    first_process= clean_(data,True)
+    return clean_(first_process,False)
 
 def process_images(input_folder, output_folder):
     # Ensure the output folder exists
@@ -80,7 +108,7 @@ def process_images(input_folder, output_folder):
         os.makedirs(output_folder)
 
     # Get a list of image files in the input folder
-    image_files = [f for f in os.listdir(input_folder) if f.endswith(('.png', '.jpg', '.jpeg'))]
+    image_files = [f for f in os.listdir(input_folder) if f.endswith(('.png'))]
 
     # Process each image
     for image_file in image_files:
@@ -154,3 +182,33 @@ def save_prediction(output, filename):
 
     # Save the image to the specified filename
     img.save(filename)
+    
+    
+def accuracy_(target, output):
+    """Accuracy classification score from tensors.
+
+    Args:
+        target (torch.Tensor): Ground truth (correct) labels.
+        output (torch.Tensor): Predicted labels, as returned by a classifier.
+
+    Returns:
+        float: accuracy score between 0 and 1.
+    """
+    target_flatten = torch.flatten(target).cpu()
+    output_flatten = torch.flatten(output).cpu()
+    return accuracy_score(target_flatten, output_flatten, normalize=True)
+
+
+def f1_(target, output):
+    """F1 score from tensors.
+
+    Args:
+        target (torch.Tensor): Ground truth (correct) labels.
+        output (torch.Tensor): Predicted labels, as returned by a classifier.
+
+    Returns:
+        float: f1 score between 0 and 1.
+    """
+    target_flatten = torch.flatten(target).cpu()
+    output_flatten = torch.flatten(output).cpu()
+    return f1_score(target_flatten, output_flatten, zero_division=1)
