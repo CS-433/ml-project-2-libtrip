@@ -218,6 +218,27 @@ def f1_(target, output):
     return f1_score(target_flatten, output_flatten, zero_division=1)
 
 def train(model, train_loader, criterion, optimizer, device,epochs, lr_scheduler=None):
+    """
+    Train a neural network model using the specified training data and optimization parameters.
+
+    Parameters:
+    - model (torch.nn.Module): Neural network model to be trained.
+    - train_loader (torch.utils.data.DataLoader): DataLoader for the training dataset.
+    - criterion: Loss function used for training.
+    - optimizer: Optimization algorithm used for updating the model's parameters.
+    - device (torch.device): Device to which the model and data should be moved (e.g., 'cuda' for GPU or 'cpu').
+    - epochs (int): Number of training epochs.
+    - lr_scheduler (torch.optim.lr_scheduler, optional): Learning rate scheduler. Default is None.
+
+    Returns:
+    - losses (list): List of tuples containing the epoch number and the average loss for each epoch.
+
+    Notes:
+    - The function performs the training loop over the specified number of epochs.
+    - Computes the average loss for each epoch and prints it.
+    - Updates the model's parameters based on the chosen optimization algorithm.
+    - Adjusts the learning rate if a learning rate scheduler is provided.
+    """
     model.train()
     losses= list()
     # Training loop
@@ -255,6 +276,22 @@ def train(model, train_loader, criterion, optimizer, device,epochs, lr_scheduler
     return losses
 
 def predict(model, test_loader, device,pred_path,threshhold=0.25):
+    """
+    Perform predictions using a trained model on a test dataset and save the predicted masks.
+
+    Parameters:
+    - model (torch.nn.Module): Trained neural network model.
+    - test_loader (torch.utils.data.DataLoader): DataLoader for the test dataset.
+    - device (torch.device): Device to which the model and data should be moved (e.g., 'cuda' for GPU or 'cpu').
+    - pred_path (str): Path to the directory to save the predicted masks.
+    - threshold (float, optional): Threshold value for binarizing the model predictions. Default is 0.25.
+
+    Returns:
+    - avg_f1 (float): Average F1 score over the local test dataset.
+    - avg_accuracy (float): Average accuracy over the local test dataset.
+    - prediction_filenames (list): List of file paths where the predicted masks are saved.
+
+    """
     model.eval()
     f1_scores = list()
     accuracy_scores = list()
@@ -305,6 +342,24 @@ def predict(model, test_loader, device,pred_path,threshhold=0.25):
 
 def create_augmented_dataset(trainingPath,gtPath,imgAugPath,gtAugPath,rotation_angles= [45,135,225]):
 
+    """
+    Creates an augmented dataset by applying rotation transformations to a subset of the original images.
+
+    Parameters:
+    - trainingPath (str): Path to the directory containing original training images.
+    - gtPath (str): Path to the directory containing original ground truth masks.
+    - imgAugPath (str): Path to the directory to save augmented images.
+    - gtAugPath (str): Path to the directory to save augmented ground truth masks.
+    - rotation_angles (list, optional): List of rotation angles in degrees to apply during augmentation. Default is [45, 135, 225].
+
+    Returns:
+    None
+
+    Notes:
+    - The function creates directories for augmented images and ground truth masks if they don't exist.
+    - Selects the first 10 images from the original dataset and applies rotation transformations.
+    - Saves the augmented images and ground truth masks with filenames indicating the image index and rotation angle.
+    """
     # Creates directories
     for dirname in (imgAugPath, gtAugPath):
         os.makedirs(dirname, exist_ok=True)
