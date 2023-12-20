@@ -6,6 +6,10 @@ import re
 from sklearn.cluster import DBSCAN
 from collections import Counter
 import torch
+import tqdm
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.utils.data import DataLoader
+from torchvision import transforms
 from torch.utils.data import Dataset, random_split
 from sklearn.metrics import accuracy_score, f1_score
 
@@ -100,7 +104,7 @@ def clean_image(image, eps=10, min_points_per_cluster=500):
     """
     data= np.array(image)
     first_process= clean_(data,True)
-    return clean_(first_process,False)
+    return first_process#clean_(first_process,False)
 
 def process_images(input_folder, output_folder):
     # Ensure the output folder exists
@@ -212,3 +216,133 @@ def f1_(target, output):
     target_flatten = torch.flatten(target).cpu()
     output_flatten = torch.flatten(output).cpu()
     return f1_score(target_flatten, output_flatten, zero_division=1)
+
+def train(model, train_loader, criterion, optimizer, device,epochs, lr_scheduler=None):
+    model.train()
+    losses= list()
+    # Training loop
+    for epoch in range(epochs):
+        total_loss = 0.0
+        # Iterate over the training data
+        for data, target in tqdm(train_loader, desc=f'Epoch {epoch + 1}/{epochs}', unit='batch'):
+            # Send the input to the device
+            data, target = data.to(device), target.to(device)
+
+            # Zero the parameter gradients
+            optimizer.zero_grad()
+
+            # Forward pass
+            output = model(data)
+
+            # Calculate the loss
+            loss = criterion(output, target)
+
+            # Backward pass and optimization
+            loss.backward()
+            optimizer.step()
+
+            # Update the total loss
+            total_loss += loss.item()
+
+        # Average loss for the epoch
+        average_loss = total_loss / len(train_loader)
+        print(f"average loss: ", average_loss)
+        losses.append((epoch,average_loss))
+
+        # Adjust learning rate if a scheduler is provided
+        if lr_scheduler is not None:
+            lr_scheduler.step(average_loss)
+    return losses
+
+def predict(model, test_loader, device,pred_path,threshhold=0.25):
+    model.eval()
+    f1_scores = list()
+    accuracy_scores = list()
+    prediction_filnames = list()
+    with torch.no_grad():
+    # Loop over the dataset
+        for i, (data, target) in enumerate(test_loader):
+            filename = create_filename(len(test_loader),i)
+            print(f'Processing {filename}')
+
+            # Send the input to the device
+            data = data.to(device)
+            # Make the predictions
+            output = model(data)
+
+            # Get labels
+            output = get_label(output, threshhold)
+
+            if target.dim() != 1:
+                target= target.to(device)
+                target = get_label(target, threshhold)
+                accuracy = accuracy_(target, output)
+                f1 = f1_(target, output)
+                accuracy_scores.append(accuracy)
+                f1_scores.append(f1)
+
+            # Save mask
+            else:
+                if not os.path.exists(pred_path):
+                    os.makedirs(pred_path)
+                output_path = os.path.join(pred_path, filename)
+                save_prediction(output, output_path)
+                prediction_filnames.append(output_path)
+
+    # Print a message after processing all images
+    print('Prediction completed.')
+
+    # Print a message after processing all images
+    if target.dim() != 1:
+        avg_accuracy = sum(accuracy_scores).item() / len(accuracy_scores)
+        avg_f1 = sum(f1_scores).item() / len(f1_scores)
+        print('F1 Score: ', avg_f1)
+        print('Accuracy: ', avg_accuracy)
+        return avg_f1, avg_accuracy, prediction_filnames
+    else:
+        print("accuracy and f1 not computed")
+        return None, None,prediction_filnames
+
+def create_augmented_dataset(trainingPath,gtPath,imgAugPath,gtAugPath,rotation_angles= [45,135,225]):
+
+    # Creates directories
+    for dirname in (imgAugPath, gtAugPath):
+        os.makedirs(dirname, exist_ok=True)
+    # Load the original dataset
+    images = sorted(os.listdir(trainingPath))
+    masks = sorted(os.listdir(gtPath))
+    #Select the first 10 images
+    for i in range(10):
+      for angle in rotation_angles:
+
+        # Get image and mask names
+        image_name = images[i]
+        mask_name = masks[i]
+
+        # Get images paths
+        image_path = os.path.join(trainingPath, image_name)
+        mask_path = os.path.join(gtPath, mask_name)
+
+        # Open images
+        image = Image.open(image_path)
+        mask = Image.open(mask_path)
+        to_tensor = transforms.ToTensor()
+
+        #apply the transformations
+        image_transformed = transforms.functional.affine(to_tensor(image), angle=angle,translate=(0, 0), scale=1.0, shear=0.0)
+        mask_transformed = transforms.functional.affine(to_tensor(mask), angle=angle,translate=(0, 0), scale=1.0, shear=0.0)
+
+        # Convert tensors to PIL Images
+        image_transformed_PIL = transforms.ToPILImage()(image_transformed)
+        mask_transformed_PIL = transforms.ToPILImage()(mask_transformed)
+
+        # Save augmented dataset
+        filename_img = f'Image_{i+1:04d}_{angle:03d}.png'
+        filename_gd = f'gdImage_{i+1:04d}_{angle:03d}.png'
+
+        image_path_aug = os.path.join(imgAugPath, filename_img)
+        mask_path_aug = os.path.join(gtAugPath, filename_gd)
+
+        image_transformed_PIL.save(image_path_aug)
+        mask_transformed_PIL.save(mask_path_aug)
+
