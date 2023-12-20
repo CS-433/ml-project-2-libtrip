@@ -9,7 +9,7 @@ Our classifier consists of a convolutional neural network called UNet.
 - Imane Zaaraoui
 - Lina Bousbina
 
-## Installing
+## Installation
 
 To run the code of this project, you need to install the libraries listed in
 the `requirements.txt` file. You can perform the installation using this
