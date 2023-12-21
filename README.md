@@ -43,12 +43,11 @@ This command will create the predicted mask for each test image in the
 This is the structure of the repository:
 
 - `data`: contains the datasets
-- `notebooks`: contains the notebooks
-    - `normal_training.ipynb`: if you want to train the model on the original training set, run this notebook until the cell where we save the model. It also performs predictions, saves predicted masks, creates submission files, and applies post-processing
-    - `augmented_data_training`: similar to `normal_training.ipynb`, but with data augmentation during training.
-    - `cross_validation.ipynb`: performs cross-validation to determine the optimal split ratio for training and validation.
-    
 - `models`: contains the trained models
+- `normal_training.ipynb`: if you want to train the model on the original training set, run this notebook until the cell where we save the model. It also performs predictions, saves predicted masks, creates submission files, and applies post-processing
+- `augmented_data_training`: similar to `normal_training.ipynb`, but with data augmentation during training.
+- `cross_validation.ipynb`: performs cross-validation to determine the optimal split ratio for training and validation.
+    
 - `run.py`: script for making predictions for AIcrowd
 - `helper.py`: contains the helper functions
 - `ImageDataset.py`: dataset class
