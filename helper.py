@@ -6,7 +6,7 @@ import re
 from sklearn.cluster import DBSCAN
 from collections import Counter
 import torch
-import tqdm
+from tqdm import tqdm
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 from torchvision import transforms
